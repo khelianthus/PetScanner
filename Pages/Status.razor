@@ -1,4 +1,7 @@
 ﻿@page "/status"
+@using PetScanner.Models
+@using PetScanner.Services
+@inject FetchFromArduino fetchFromArduino; 
 
 <PageTitle>Status</PageTitle>
 
@@ -6,9 +9,29 @@
 
 Check cat scanning status.
 
+<button @onclick="FetchData">Get data</button>
+
+
+ID: @id
+Time: @time
 @code {
+    int id;
+    int time;
 
-    // private Dictionary<DateTime, string> PetStatusList = new Dictionary<DateTime, string>
+    public async Task FetchData()
+    {
+        try
+        {
+            var result = await fetchFromArduino.GetData();
+            Console.WriteLine("FetchData called");
+            Console.WriteLine("FetchData result:", result.Id + " " + result.Time);
 
-    // private 
+            id = result.Id;
+            time = result.Time;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error fetching data from arduino:", ex.ToString());
+        }
+    }
 }
