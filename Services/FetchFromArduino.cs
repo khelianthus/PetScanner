@@ -1,4 +1,6 @@
-﻿using PetScanner.Models;
+﻿using Microsoft.JSInterop;
+using PetScanner.Models;
+using PetScanner.Models.DTO;
 using System.Collections.Immutable;
 using System.IO.Ports;
 using System.Net.Http;
@@ -9,106 +11,68 @@ namespace PetScanner.Services;
 
 public class FetchFromArduino
 {
-
     private readonly HttpClient httpClient;
-    private Pet Pet { get; set; } = new Pet();
+    private readonly IJSRuntime jsRuntime;
+    private readonly LocalStorageService localStorageService;
 
-    public FetchFromArduino(HttpClient httpClient)
+    public FetchFromArduino(HttpClient httpClient, IJSRuntime jsRuntime, LocalStorageService localStorageService)
     {
         this.httpClient = httpClient;
+        this.jsRuntime = jsRuntime;
+        this.localStorageService = localStorageService;
     }
 
-    public async Task<ScanResult> GetData()
+    public async Task <List<TimeResponse>?> GetTimeOfScan()
     {
-        //var ardo = new SerialPort();
-        //ardo.PortName = "COM5";
-        //ardo.BaudRate = 9600;
+        string serverIpAddress = "192.168.0.125";
+        string serverUrl = $"http://{serverIpAddress}/";
 
-        //using (var serialPort = new SerialPort(ardo.PortName, ardo.BaudRate))
-        //{
-        //    serialPort.Open();
-        //    serialPort.Write(response);
-        //};
+        var scanHistory = await localStorageService.GetScanHistory();
 
-        string ipAddress = "192.168.0.124";
-        string serverUrl = $"http://{ipAddress}/";
+        if (string.IsNullOrEmpty(scanHistory))
+        {
+            await localStorageService.SetScanHistory();
+        }
 
-        ScanResult scanResult;
-
-
-        Console.WriteLine(httpClient.BaseAddress);
         httpClient.BaseAddress = new Uri(serverUrl);
-        Console.WriteLine("new baseAdress:", httpClient.BaseAddress);
-        Console.WriteLine(httpClient.BaseAddress);
-
 
         var request = new HttpRequestMessage(HttpMethod.Get, serverUrl);
         request.Headers.Add("Accept", "application/json");
+        var response = await httpClient.SendAsync(request);
 
-    
+        //var responseBody = response.Content.ReadAsStringAsync();
+
         try
         {
-            var response = await httpClient.SendAsync(request);
-            Console.WriteLine("HELLO");
-            Console.WriteLine(response.Content);
-            var responseBody = response.Content.ReadAsStringAsync();
 
             string responseData = await response.Content.ReadAsStringAsync();
-            scanResult = JsonSerializer.Deserialize<ScanResult>(responseData);
-            return scanResult;
 
+            var scanResponse = JsonSerializer.Deserialize<ScanResponse>(responseData);
+
+            //TimeResponse timeResponse;
+
+            var timeResponses = scanResponse?.Scans;
+
+            if (timeResponses == null || timeResponses.Count == 0)
+            {
+                return null;
+            }
+
+            var scanJson = JsonSerializer.Serialize(timeResponses);
+            Console.WriteLine(scanJson); 
+
+
+            var scanHistoryJson = await localStorageService.GetScanHistory();
+            
+            await jsRuntime.InvokeVoidAsync("localStorage.setItem", "ScanHistory", scanJson);
+
+            return timeResponses; 
         }
+
         catch (Exception ex)
         {
-            Console.WriteLine("ERROR");
-            Console.WriteLine(ex.ToString());
+            throw new HttpRequestException($"Failed to fetch from Arduino. Message: {ex.Message}");
         }
-
-
-        //ASP .NET response
-        //if (response.IsSuccessStatusCode)
-        //if (response.IsSuccessStatusCode)
-        //{
-        //    try
-        //    {
-
-        //        var responseBody = response.Content.ReadAsStringAsync();
-        //        //return JsonSerializer.Deserialize<ScanResult>(responseBody);
-        //        //map response to objekt
-        //        //ResponseDTO ResponseDTO = new
-        //        //{
-        //        //    Id = response.Id,
-        //        //    Name = response.Name,
-        //        //    TimeStamp = response.TimeStamp,
-        //        //};
-
-        //        ////Pet = new Pet
-        //        ////{
-        //        ////    Id = response.Id,
-        //        ////    Name = response.Name,
-        //        ////    TimeOfScan = response.TimeStamp.ToDateTime(),
-        //        ////};
-
-        //        //////Add new scan to history
-        //        ////Pet.ScanHistory.Add(response.TimeStamp.ToDateTime());
-
-        //        return await responseBody;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new HttpRequestException($"Failed to fetch data. Status code: {response.StatusCode}"); 
-        //    }
-        //}
-        //Console.WriteLine("Error: " + response.StatusCode);
-        return null; ;
     }
 }
 
-public class ScanResult
-{
-    [JsonPropertyName("id")]
-    public int Id { get; set; }
-
-    [JsonPropertyName("time")]
-    public int Time { get; set; }
-}
