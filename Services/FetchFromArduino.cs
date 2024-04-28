@@ -40,16 +40,11 @@ public class FetchFromArduino
         request.Headers.Add("Accept", "application/json");
         var response = await httpClient.SendAsync(request);
 
-        //var responseBody = response.Content.ReadAsStringAsync();
-
         try
         {
-
             string responseData = await response.Content.ReadAsStringAsync();
 
             var scanResponse = JsonSerializer.Deserialize<ScanResponse>(responseData);
-
-            //TimeResponse timeResponse;
 
             var timeResponses = scanResponse?.Scans;
 
