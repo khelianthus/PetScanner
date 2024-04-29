@@ -1,12 +1,6 @@
 ﻿using Microsoft.JSInterop;
-using PetScanner.Models;
 using PetScanner.Models.DTO;
-using System.Collections.Immutable;
-using System.IO.Ports;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace PetScanner.Services;
 
@@ -35,20 +29,11 @@ public class FetchFromArduino
             await localStorageService.SetScanHistory();
         }
 
-        // Configure the HttpClient to accept HTTP addresses
-        httpClient.DefaultRequestHeaders.Accept.Clear();
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
         httpClient.BaseAddress = new Uri(serverUrl);
 
-        // Make the HTTP request
-        var response = await httpClient.GetAsync(serverUrl);
-
-        //httpClient.BaseAddress = new Uri(serverUrl);
-
-        //var request = new HttpRequestMessage(HttpMethod.Get, serverUrl);
-        //request.Headers.Add("Accept", "application/json");
-        //var response = await httpClient.SendAsync(request);
+        var request = new HttpRequestMessage(HttpMethod.Get, serverUrl);
+        request.Headers.Add("Accept", "application/json");
+        var response = await httpClient.SendAsync(request);
 
         try
         {
@@ -64,8 +49,6 @@ public class FetchFromArduino
             }
 
             var scanJson = JsonSerializer.Serialize(timeResponses);
-            Console.WriteLine(scanJson); 
-
 
             var scanHistoryJson = await localStorageService.GetScanHistory();
             

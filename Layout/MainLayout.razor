@@ -2,8 +2,6 @@
 @inject HttpClient client
 @inject NavigationManager navManager
 <div class="page">
-
-
     <main>
         <div class="d-flex px-4 nav">
             @if (navManager.Uri.EndsWith("/my-pets"))
@@ -14,11 +12,11 @@
                         <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293z" />
                     </svg>
                 </a>
-                <h1 class="text-center">PetScanner</h1>
+                <h1 class="text-center fw-bolder text-white">PetScanner</h1>
             }
             else
             {
-                <h1 class="text-center ms-auto">PetScanner</h1>
+                <h1 class="text-center ms-auto fw-bolder text-white">PetScanner</h1>
             }
             <a href="/my-pets" target="_blank" class="ms-auto p-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 120 120">
