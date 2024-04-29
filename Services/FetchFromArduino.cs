@@ -35,6 +35,8 @@ public class FetchFromArduino
         request.Headers.Add("Accept", "application/json");
         var response = await httpClient.SendAsync(request);
 
+        response.EnsureSuccessStatusCode();
+
         try
         {
             string responseData = await response.Content.ReadAsStringAsync();
@@ -57,9 +59,15 @@ public class FetchFromArduino
             return timeResponses; 
         }
 
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+            return null;
+        }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to fetch from Arduino. Message: {ex.Message}");
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            return null;
         }
     }
 }
