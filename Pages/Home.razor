@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using PetScanner.Models.DTO
 @using PetScanner.Services
+@using System.Text.Json
 @inject IJSRuntime jsRuntime
 @inject LocalStorageService localStorageService
 
@@ -28,9 +29,33 @@ else
 {
     @if (timeStamps == null)
     {
-        <p class="text-center mt-3">
+        <p class="text-center my-3">
             No connection to the Arduino.
         </p>
+        <div>
+            <button class="button text-center mb-2" @onclick="FetchScanHistory">Get old scans</button>
+        </div>
+        if (!string.IsNullOrEmpty(scanHistoryJson))
+        {
+            <h2>Displaying scans from memory</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in scanHistoryList)
+                    {
+                        <tr>
+                            <td>?</td>
+                            <td>@item.Time</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     }
     else
     {
@@ -62,6 +87,8 @@ else
     private List<TimeResponse>? timeStamps;
     private FetchFromArduino fetchFromArduino;
     private bool isLoading = false;
+    private string scanHistoryJson;
+    private List<TimeResponse>? scanHistoryList;
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,5 +119,13 @@ else
             Console.WriteLine(ex.Message);
             isLoading = false;
         }
+    }
+
+    public async Task FetchScanHistory()
+    {
+        //scanHistory = await localStorageService.GetScanHistory();
+        scanHistoryJson = await localStorageService.GetScanHistory();
+        scanHistoryList = JsonSerializer.Deserialize<List<TimeResponse>>(scanHistoryJson);
+
     }
 }
