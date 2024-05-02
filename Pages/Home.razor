@@ -123,9 +123,7 @@ else
 
     public async Task FetchScanHistory()
     {
-        //scanHistory = await localStorageService.GetScanHistory();
         scanHistoryJson = await localStorageService.GetScanHistory();
         scanHistoryList = JsonSerializer.Deserialize<List<TimeResponse>>(scanHistoryJson);
-
     }
 }

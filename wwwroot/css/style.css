@@ -41,9 +41,6 @@ body {
     transition: transform 200ms, background 200ms;
 }
 
-    .button :hover {
-        transform: translateY(-2px);
-    }
 
 .button-content {
     display: flex;

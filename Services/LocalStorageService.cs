@@ -1,11 +1,4 @@
 ﻿using Microsoft.JSInterop;
-using PetScanner.Models;
-using PetScanner.Models.DTO;
-using System.Collections.Immutable;
-using System.IO.Ports;
-using System.Net.Http;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace PetScanner.Services;
 
@@ -29,12 +22,5 @@ public class LocalStorageService
     {
         await jsRuntime.InvokeVoidAsync("localStorage.setItem", "ScanHistory", "");
     }
-
-    public async Task SetNewItemsToScanHistory()
-    {
-        await jsRuntime.InvokeVoidAsync("localStorage.setItem", "ScanHistory", "");
-    }
-
-
 }
 
